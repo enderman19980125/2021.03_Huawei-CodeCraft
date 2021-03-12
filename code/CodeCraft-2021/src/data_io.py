@@ -1,8 +1,16 @@
 import data
 
 
-def get_line_from_file() -> str:
+def get_line_from_file_1() -> str:
     with open('../../../data/training-1.txt', 'r') as file:
+        lines = file.readlines()
+    for line in lines:
+        line = line.strip('\n')
+        yield line
+
+
+def get_line_from_file_2() -> str:
+    with open('../../../data/training-2.txt', 'r') as file:
         lines = file.readlines()
     for line in lines:
         line = line.strip('\n')
@@ -15,19 +23,27 @@ def get_line_from_console() -> str:
         yield line
 
 
-get_line = get_line_from_file()
+def clear_data() -> None:
+    data.Server_Config_Dict = {}
+    data.VM_Config_Dict = {}
+    data.VM_Dict = {}
+    data.Server_Dict = {}
+    data.Request_List = []
+    data.Operation_List = []
 
 
-def clear_data():
-    data.Servers_Parameter_Dict = {}
-    data.VM_Parameter_Dict = {}
-    data.Requests_List = []
-    data.VM_Info_Dict = {}
-    data.Machines_Info_List = []
-    data.Operations_List = []
+def read_data() -> None:
+    if data.IS_DEBUG:
+        print('Reading data ...')
 
+    clear_data()
+    if data.READ_MODE == 'file-1':
+        get_line = get_line_from_file_1()
+    elif data.READ_MODE == 'file-2':
+        get_line = get_line_from_file_2()
+    else:
+        get_line = get_line_from_console()
 
-def read_data():
     data.Server_Config_Dict = {}
     n_servers = int(next(get_line))
     for _ in range(n_servers):
@@ -67,21 +83,60 @@ def read_data():
             if operation == 'add':
                 vm_type = request_item_list[1]
                 vm_id = request_item_list[2]
-                requests_day_list
-                request_item = {
-                    'op': request_item_list[0],
-                    'vm_type': vm_type,
-                    'vm_id': vm_id,
-                }
-                data.VM_Info_Dict[vm_id] = {
-                    'vm_type': vm_type,
-                    'machine_id': -1,
-                    'node': '',
-                }
-            else:
-                vm_id = request_item_list[1]
+                vm_config = data.VM_Config_Dict[vm_type]
+                vm = data.VM(vm_id=vm_id, config=vm_config)
+                data.VM_Dict[vm_id] = vm
                 requests_day_list.append(data.Request(
                     operation=operation,
-                    vm_id=vm_id,
+                    vm=vm,
+                    vm_config=vm_config
+                ))
+            else:
+                vm_id = request_item_list[1]
+                vm = data.VM_Dict[vm_id]
+                requests_day_list.append(data.Request(
+                    operation=operation,
+                    vm=vm,
                 ))
         data.Request_List.append(requests_day_list)
+
+
+def write_data() -> None:
+    if data.IS_DEBUG:
+        print('Writing data ...')
+
+    server_mapping_dict = {}  # key=server_id:str, value=output_server_id:int
+
+    for day_operation in data.Operation_List:
+
+        server_day_dict = {}  # key=server_type:str, value=[Server_1, Server_2, Server_3, ...]
+        for server in day_operation.purchase:
+            server_type = server.config.type
+            if server_type in server_day_dict.keys():
+                server_day_dict[server_type].append(server)
+            else:
+                server_day_dict[server_type] = [server]
+
+        q = len(server_day_dict)
+        print(f'(purchase, {q})')
+
+        for server_type, servers_list in server_day_dict.items():
+            for server in servers_list:
+                server_id = server.id
+                output_server_id = len(server_mapping_dict)
+                server_mapping_dict[server_id] = output_server_id
+            num_servers = len(servers_list)
+            print(f'({server_type}, {num_servers})')
+
+        # TODO: migrate
+        w = len(day_operation.migration)
+        print(f'(migration, {w})')
+
+        for deploy in day_operation.deploy:
+            server_id = deploy.to_server.id
+            server_node = deploy.to_node
+            output_server_id = server_mapping_dict[server_id]
+            if server_node:
+                print(f'({output_server_id}, {server_node})')
+            else:
+                print(f'({output_server_id})')

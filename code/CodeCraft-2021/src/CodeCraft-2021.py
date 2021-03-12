@@ -1,14 +1,24 @@
 import data
 import data_io
+import theory
+import simulations
 
 
 def main():
-    data_io.clear_data()
+    if data.IS_DEBUG:
+        import time
+        t1 = time.time()
     data_io.read_data()
-    s = data.Servers_Parameter_Dict
-    vm = data.VM_Parameter_Dict
-    r = data.Requests_List
-    print()
+    # simulations.start()
+    theory.start()
+
+    if data.IS_DEBUG:
+        import time
+        t2 = time.time()
+        print(f'Money = {data.Total_Cost}')
+        print(f'Time = {t2 - t1}')
+    else:
+        data_io.write_data()
 
 
 if __name__ == "__main__":
