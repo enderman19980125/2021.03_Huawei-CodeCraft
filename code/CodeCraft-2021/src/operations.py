@@ -4,8 +4,12 @@ import data
 def day_request_generator() -> list:
     for day_request_list in data.Request_List:
         if data.IS_DEBUG:
+            day_maintain_cost = 0
             for server in data.Server_Dict.values():
-                data.Total_Cost += server.config.cost_day
+                day_maintain_cost += server.config.cost_day
+            data.COST_MAINTAIN.append(day_maintain_cost)
+            data.COST_PURCHASE.append(0)
+            data.COST_TOTAL += day_maintain_cost
         data.Operation_List.append(data.DayOperation())
         yield day_request_list
 
@@ -61,7 +65,9 @@ def purchase_server(server_config: data.ServerConfig) -> str:
     server = data.Server(server_id=server_id, config=server_config)
     data.Server_Dict[server_id] = server
     data.Operation_List[-1].purchase.append(server)
-    data.Total_Cost += server.config.cost_basic
+    if data.IS_DEBUG:
+        data.COST_PURCHASE[-1] += server.config.cost_basic
+        data.COST_TOTAL += server.config.cost_basic
     return server_id
 
 
@@ -136,10 +142,10 @@ def deploy_vm(vm: data.VM, server: data.Server, server_node: str = None) -> None
         raise ValueError('The Server has no capacity for the VM.')
 
     if vm.config.is_double:
-        server.A_cpu_rest -= vm.config.cpu / 2
-        server.B_cpu_rest -= vm.config.cpu / 2
-        server.A_memory_rest -= vm.config.memory / 2
-        server.B_memory_rest -= vm.config.memory / 2
+        server.A_cpu_rest -= vm.config.cpu // 2
+        server.B_cpu_rest -= vm.config.cpu // 2
+        server.A_memory_rest -= vm.config.memory // 2
+        server.B_memory_rest -= vm.config.memory // 2
         server.AB_vm.append(vm)
         vm.server = server
         deploy = data.Deploy(vm=vm, to_server=server)
@@ -171,10 +177,10 @@ def delete_vm(vm: data.VM) -> None:
     server = vm.server
 
     if vm.config.is_double:
-        server.A_cpu_rest += vm.config.cpu / 2
-        server.B_cpu_rest += vm.config.cpu / 2
-        server.A_memory_rest += vm.config.memory / 2
-        server.B_memory_rest += vm.config.memory / 2
+        server.A_cpu_rest += vm.config.cpu // 2
+        server.B_cpu_rest += vm.config.cpu // 2
+        server.A_memory_rest += vm.config.memory // 2
+        server.B_memory_rest += vm.config.memory // 2
         server.AB_vm.remove(vm)
     elif vm.node == 'A':
         server.A_cpu_rest += vm.config.cpu

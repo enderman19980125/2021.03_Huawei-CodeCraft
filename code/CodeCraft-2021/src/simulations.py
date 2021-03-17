@@ -17,22 +17,11 @@ def buy_server_randomly(vm: data.VM) -> data.Server:
 
 
 def start():
-    if data.IS_DEBUG:
-        print('Start simulations ...')
-
     capable_servers_list = []
 
-    total_capacity_list = [0]
-
     for day_id, day_request_list in enumerate(operations.day_request_generator()):
-        if data.IS_DEBUG and day_id % 50 == 0:
-            print(f'Start day {day_id} ...')
-            print(f'Money = {data.Total_Cost}')
-
-        capacity = 0
         for request in day_request_list:
             vm = request.vm
-            capacity += vm.config.cpu * vm.config.memory
             if request.operation == 'add':
                 is_ok = False
                 while True:
@@ -53,13 +42,24 @@ def start():
             else:
                 operations.delete_vm(vm=vm)
 
-        total_capacity_list.append(capacity)
+        if data.IS_DEBUG:
+            print(f'-------------------------------- DAY {day_id} --------------------------------')
 
-    min_basic_unit_cost = min([s.cost_basic / s.cpu / s.memory for s in data.Server_Config_Dict.values()])
-    min_day_unit_cost = min([s.cost_day / s.cpu / s.memory for s in data.Server_Config_Dict.values()])
-    total_cost = 0
-    for i in range(1, len(total_capacity_list)):
-        if total_capacity_list[i - 1] < total_capacity_list[i]:
-            total_cost += min_basic_unit_cost * (total_capacity_list[i] - total_capacity_list[i - 1])
-        total_cost += min_day_unit_cost * total_capacity_list[i]
-    print()
+            cpu_rest = []
+            memory_rest = []
+
+            for server in data.Server_Dict.values():
+                cpu_rest.append(f'({server.A_cpu_rest},{server.B_cpu_rest})')
+                memory_rest.append(f'({server.A_memory_rest},{server.B_memory_rest})')
+                # print(f'Sever #{server.id:<5s}    type={server.config.type}    '
+                #       f'A_rest=({server.A_cpu_rest:3d}C,{server.A_memory_rest:3d})    '
+                #       f'B_rest=({server.B_cpu_rest:3d}C,{server.B_memory_rest:3d})')
+
+            n_servers = len(data.Server_Dict)
+            day_cost_purchase = data.COST_PURCHASE[-1]
+            day_cost_maintain = data.COST_MAINTAIN[-1]
+            # print(f'n_servers={n_servers}')
+            print(f'cpu_rest={",".join(cpu_rest)}')
+            print(f'memory_rest={",".join(memory_rest)}')
+            # print(f'day_cost_purchase={day_cost_purchase}    day_cost_maintain={day_cost_maintain}    Money = {data.COST_TOTAL}')
+            # print(f'{day_id}\t{n_servers}\t{day_cost_purchase}\t{day_cost_maintain}')

@@ -1,6 +1,10 @@
-READ_MODE = 'file-2'  # 'file-1', 'file-2', 'console'
+READ_MODE = 'console'  # 'file-1', 'file-2', 'console'
+OUTPUT_FILE = None
 IS_DEBUG = True
-Total_Cost = 0
+
+COST_TOTAL = 0
+COST_PURCHASE = []
+COST_MAINTAIN = []
 
 
 class ServerConfig:
@@ -38,10 +42,10 @@ class Server:
         self.id = server_id
         self.config = config
         self.status = 'idle'  # 'running', 'idle', 'deleted'
-        self.A_cpu_rest = self.config.cpu / 2
-        self.B_cpu_rest = self.config.cpu / 2
-        self.A_memory_rest = self.config.memory / 2
-        self.B_memory_rest = self.config.memory / 2
+        self.A_cpu_rest = self.config.cpu // 2
+        self.B_cpu_rest = self.config.cpu // 2
+        self.A_memory_rest = self.config.memory // 2
+        self.B_memory_rest = self.config.memory // 2
         self.A_vm = []  # List[VM1, VM2, VM3, ...]
         self.B_vm = []  # List[VM1, VM2, VM3, ...]
         self.AB_vm = []  # List[VM1, VM2, VM3, ...]
@@ -102,7 +106,7 @@ class Migration:
 
 class Deploy:
     def __init__(self, vm: VM, to_server: Server, to_node: str = None):
-        self.vm = VM
+        self.vm = vm
         self.to_server = to_server
         self.to_node = to_node
 

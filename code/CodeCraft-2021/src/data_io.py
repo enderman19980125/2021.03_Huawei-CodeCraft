@@ -23,6 +23,38 @@ def get_line_from_console() -> str:
         yield line
 
 
+def write_line_to_file_1(s: str) -> None:
+    if data.OUTPUT_FILE:
+        with open(data.OUTPUT_FILE, 'a') as file:
+            file.write(s + '\n')
+    else:
+        from datetime import datetime
+        current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+        data.OUTPUT_FILE = f'./../../../output/training-1_{current_time}.txt'
+        with open(data.OUTPUT_FILE, 'w') as file:
+            file.write(s + '\n')
+
+
+def write_line_to_file_2(s: str) -> None:
+    if data.OUTPUT_FILE:
+        with open(data.OUTPUT_FILE, 'a') as file:
+            file.write(s + '\n')
+    else:
+        from datetime import datetime
+        current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+        data.OUTPUT_FILE = f'./../../../output/training-2_{current_time}.txt'
+        with open(data.OUTPUT_FILE, 'w') as file:
+            file.write(s + '\n')
+
+
+def write_line(s: str) -> None:
+    print(s)
+    if data.READ_MODE == 'file-1':
+        write_line_to_file_1(s)
+    elif data.READ_MODE == 'file-2':
+        write_line_to_file_2(s)
+
+
 def clear_data() -> None:
     data.Server_Config_Dict = {}
     data.VM_Config_Dict = {}
@@ -118,7 +150,7 @@ def write_data() -> None:
                 server_day_dict[server_type] = [server]
 
         q = len(server_day_dict)
-        print(f'(purchase, {q})')
+        write_line(f'(purchase, {q})')
 
         for server_type, servers_list in server_day_dict.items():
             for server in servers_list:
@@ -126,17 +158,17 @@ def write_data() -> None:
                 output_server_id = len(server_mapping_dict)
                 server_mapping_dict[server_id] = output_server_id
             num_servers = len(servers_list)
-            print(f'({server_type}, {num_servers})')
+            write_line(f'({server_type}, {num_servers})')
 
         # TODO: migrate
         w = len(day_operation.migration)
-        print(f'(migration, {w})')
+        write_line(f'(migration, {w})')
 
         for deploy in day_operation.deploy:
             server_id = deploy.to_server.id
             server_node = deploy.to_node
             output_server_id = server_mapping_dict[server_id]
             if server_node:
-                print(f'({output_server_id}, {server_node})')
+                write_line(f'({output_server_id}, {server_node})')
             else:
-                print(f'({output_server_id})')
+                write_line(f'({output_server_id})')
