@@ -1,6 +1,7 @@
-from _VM import VM
-from _ServerConfig import ServerConfig
-from typing import Dict
+if __name__ == '__main__':
+    from _VM import VM
+    from _ServerConfig import ServerConfig
+    from typing import Dict
 
 
 class VMConfig:
@@ -30,23 +31,28 @@ class VMConfig:
     def get_memory_of_one_node(self) -> int:
         return self.__memory
 
-    def get_this_type_vm_dict(self) -> Dict[str, VM]:
+    # def get_this_type_vm_dict(self) -> Dict[str, VM]:
+    def get_this_type_vm_dict(self) -> dict:
         return self.__this_type_vm_dict
 
-    def get_capable_server_type_dict(self) -> Dict[str, ServerConfig]:
+    # def get_capable_server_type_dict(self) -> Dict[str, ServerConfig]:
+    def get_capable_server_type_dict(self) -> dict:
         return self.__capable_server_type_dict
 
-    def add_vm(self, vm: VM) -> None:
+    # def add_non_deployed_vm(self, vm: VM) -> None:
+    def add_vm(self, vm) -> None:
         if self.get_vm_type() != vm.get_vm_type():
             raise KeyError(f"The VM[{vm.get_vm_id()}] isn't an instance of the VMConfig[{self.get_vm_type()}].")
         self.__this_type_vm_dict[vm.get_vm_id()] = vm
 
-    def remove_vm(self, vm: VM) -> None:
+    # def op_remove_vm(self, vm: VM) -> None:
+    def remove_vm(self, vm) -> None:
         if vm.get_vm_id() not in self.__this_type_vm_dict.keys():
             raise KeyError(f"The VM[{vm.get_vm_id()}] isn't in the instances of the VMConfig[{self.get_vm_type()}].")
         self.__this_type_vm_dict.pop(vm.get_vm_id())
 
-    def add_capable_server_type(self, server_config: ServerConfig):
+    # def add_capable_server_type(self, server_config:ServerConfig) -> None:
+    def add_capable_server_type(self, server_config) -> None:
         if server_config.get_cpu_of_one_node() < self.get_cpu_of_one_node() or \
                 server_config.get_memory_of_one_node() < self.get_memory_of_one_node():
             raise KeyError(f"The ServerConfig[{server_config.get_server_type()}] doesn't have enough space for the "

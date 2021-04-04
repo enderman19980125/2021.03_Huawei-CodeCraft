@@ -1,7 +1,9 @@
 from _VM import SingleVM, DoubleVM
 from _ServerConfig import ServerConfig
-from _Operation import PurchaseServerOperation
-from typing import List, Union
+
+if __name__ == '__main__':
+    from _Operation import PurchaseServerOperation
+    from typing import List, Union
 
 
 class Server:
@@ -52,10 +54,12 @@ class Server:
     def get_rest_memory_of_node_b(self) -> int:
         return self.__b_rest_memory
 
-    def add_operation(self, op: PurchaseServerOperation) -> None:
+    # def add_operation(self, op: PurchaseServerOperation) -> None:
+    def add_operation(self, op) -> None:
         self.__operation_history_list.append(op)
 
-    def get_operation_history_list(self) -> List[PurchaseServerOperation]:
+    # def get_operation_history_list(self) -> List[PurchaseServerOperation]:
+    def get_operation_history_list(self) -> list:
         return self.__operation_history_list
 
     def has_capacity_for_single_vm(self, vm: SingleVM, node: str) -> bool:
@@ -118,7 +122,8 @@ class Server:
             raise KeyError(f"The Server[{self.get_server_id()}] doesn't have enough space for the "
                            f"VM[{vm.get_vm_id()}].")
 
-    def remove_vm(self, vm: Union[SingleVM, DoubleVM]) -> None:
+    # def op_remove_vm(self, vm: Union[SingleVM, DoubleVM]) -> None:
+    def remove_vm(self, vm) -> None:
         if vm.get_server_id() != self.get_server_id():
             raise KeyError(f"The VM[{vm.get_vm_id()}] doesn't deployed on the Server[{self.get_server_id()}].")
         if vm.is_double():
