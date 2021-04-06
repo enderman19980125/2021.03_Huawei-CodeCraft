@@ -96,7 +96,7 @@ class Server:
         else:
             return True
 
-    def deploy_single_vm_with_check(self, vm: SingleVM, node: str) -> None:
+    def deploy_single_vm(self, vm: SingleVM, node: str) -> None:
         if node == 'A':
             if self.has_capacity_for_single_vm(vm=vm, node=node):
                 self.__a_rest_cpu -= vm.get_cpu_of_one_node()
@@ -118,7 +118,7 @@ class Server:
         else:
             raise KeyError("The node must be 'A' or 'B'.")
 
-    def deploy_double_vm_with_check(self, vm: DoubleVM) -> None:
+    def deploy_double_vm(self, vm: DoubleVM) -> None:
         if self.has_capacity_for_double_vm(vm=vm):
             self.__a_rest_cpu -= vm.get_cpu_of_one_node()
             self.__a_rest_memory -= vm.get_memory_of_one_node()

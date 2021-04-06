@@ -10,8 +10,8 @@ class DayInfo:
         self.__migrate_vm_operation_list = []
 
         self.__eval_purchase_cost = 0
-        self.__eval_running_cost = 0  # enabled only in debug mode
-        self.__eval_running_server_dict = {}  # enabled only in debug mode
+        self.__eval_running_cost = 0
+        self.__eval_deployed_server_dict = {}
 
     def get_day(self) -> int:
         return self.__day
@@ -37,18 +37,15 @@ class DayInfo:
     def add_migrate_vm_operation(self, op: Union[MigrateSingleVMOperation, MigrateDoubleVMOperation]) -> None:
         self.__migrate_vm_operation_list.append(op)
 
-    def eval_get_running_server_dict(self) -> Dict[str, Server]:
-        return self.__eval_running_server_dict
-
-    def eval_add_running_server(self, server: Server) -> None:
-        if server.get_server_id() not in self.eval_get_running_server_dict().keys():
-            self.__eval_running_server_dict[server.get_server_id()] = server
-            self.__eval_running_cost += server.get_cost_everyday()
-
-    def eval_remove_running_server(self, server: Server) -> None:
-        if server.get_server_id() in self.eval_get_running_server_dict().keys():
-            self.__eval_running_server_dict.pop(server.get_server_id())
-            self.__eval_running_cost -= server.get_cost_everyday()
+    # def eval_add_running_server(self, server: Server) -> None:
+    #     if server.get_server_id() not in self.eval_get_running_server_dict().keys():
+    #         self.__eval_running_server_dict[server.get_server_id()] = server
+    #         self.__eval_running_cost += server.get_cost_everyday()
+    #
+    # def eval_remove_running_server(self, server: Server) -> None:
+    #     if server.get_server_id() in self.eval_get_running_server_dict().keys():
+    #         self.__eval_running_server_dict.pop(server.get_server_id())
+    #         self.__eval_running_cost -= server.get_cost_everyday()
 
     def eval_get_purchase_cost(self) -> int:
         return self.__eval_purchase_cost
@@ -58,3 +55,12 @@ class DayInfo:
 
     def eval_get_total_cost(self) -> int:
         return self.eval_get_purchase_cost() + self.eval_get_running_cost()
+
+    def eval_get_running_server_dict(self) -> Dict[str, Server]:
+        return self.__eval_deployed_server_dict
+
+    def eval_set_deployed_server_dict(self, deployed_server_dict: Dict[str, Server]) -> None:
+        self.__eval_running_cost = 0
+        self.__eval_deployed_server_dict = deployed_server_dict
+        for server in self.eval_get_running_server_dict().values():
+            self.__eval_running_cost += server.get_cost_everyday()
