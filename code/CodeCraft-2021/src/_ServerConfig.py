@@ -2,7 +2,8 @@ from _VMConfig import VMConfig
 
 if __name__ == '__main__':
     from _Server import Server
-    from typing import Dict
+else:
+    Server = None
 
 
 class ServerConfig:
@@ -37,23 +38,21 @@ class ServerConfig:
     def get_capable_vm_type_dict(self) -> dict:
         return self.__capable_vm_type_dict
 
-    # def add_server(self, server: Server) -> None:
-    def add_server(self, server) -> None:
-        if self.get_server_type() != server.get_server_config().get_server_type():
-            raise KeyError(f"The Server[{server.get_server_id()}] isn't an instance of the "
-                           f"ServerConfig[{self.get_server_type()}].")
+    def add_server(self, server: Server) -> None:
+        # if self.get_server_type() != server.get_server_config().get_server_type():
+        #     raise KeyError(f"The Server[{server.get_server_id()}] isn't an instance of the "
+        #                    f"ServerConfig[{self.get_server_type()}].")
         self.__this_type_server_dict[server.get_server_id()] = server
 
-    # def op_remove_vm(self, server: Server) -> None:
-    def remove_vm(self, server) -> None:
-        if server.get_server_id() not in self.__this_type_server_dict.keys():
-            raise KeyError(f"The Server[{server.get_server_id()}] isn't in the instances of the "
-                           f"ServerConfig[{self.get_server_type()}].")
+    def remove_vm(self, server: Server) -> None:
+        # if server.get_server_id() not in self.__this_type_server_dict.keys():
+        #     raise KeyError(f"The Server[{server.get_server_id()}] isn't in the instances of the "
+        #                    f"ServerConfig[{self.get_server_type()}].")
         self.__this_type_server_dict.pop(server.get_server_id())
 
     def add_capable_vm_type(self, vm_config: VMConfig) -> None:
-        if self.get_cpu_of_one_node() < vm_config.get_cpu_of_one_node() or \
-                self.get_memory_of_one_node() < vm_config.get_memory_of_one_node():
-            raise KeyError(f"The ServerConfig[{self.get_server_type()}] doesn't have enough space for the "
-                           f"VMConfig[{vm_config.get_vm_type()}].")
+        # if self.get_cpu_of_one_node() < vm_config.get_cpu_of_one_node() or \
+        #         self.get_memory_of_one_node() < vm_config.get_memory_of_one_node():
+        #     raise KeyError(f"The ServerConfig[{self.get_server_type()}] doesn't have enough space for the "
+        #                    f"VMConfig[{vm_config.get_vm_type()}].")
         self.__capable_vm_type_dict[vm_config.get_vm_type()] = vm_config

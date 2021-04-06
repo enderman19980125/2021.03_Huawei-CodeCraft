@@ -1,3 +1,6 @@
+import sys
+
+
 class Writer:
     def __init__(self, is_console: bool, is_file: bool = False, filename: str = None):
         self.__is_console = is_console
@@ -30,3 +33,7 @@ class Writer:
             else:
                 with open(self.__filename, 'a') as file:
                     file.write(content)
+
+    @staticmethod
+    def flush() -> None:
+        sys.stdout.flush()

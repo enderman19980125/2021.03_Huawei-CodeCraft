@@ -1,6 +1,6 @@
-from _VM import VM, SingleVM, DoubleVM
+from _VM import SingleVM, DoubleVM
 from _Server import Server
-from typing import List, Union, Optional
+from typing import Union, Optional
 
 
 class VMOperation:
@@ -84,42 +84,3 @@ class PurchaseServerOperation:
 
     def get_server(self) -> Server:
         return self.__server
-
-
-class DayOperation:
-    def __init__(self, day: int):
-        self.__day = day
-        self.__request_operation_list = []
-        self.__purchase_server_operation_list = []
-        # self.__deploy_vm_operation_list = []
-        self.__migrate_vm_operation_list = []
-        # self.__remove_vm_operation_list = []
-
-    def get_day(self) -> int:
-        return self.__day
-
-    def get_purchase_server_operation(self) -> List[PurchaseServerOperation]:
-        return self.__purchase_server_operation_list
-
-    def get_migrate_vm_operation(self) -> List[Union[MigrateSingleVMOperation, MigrateDoubleVMOperation]]:
-        return self.__migrate_vm_operation_list
-
-    def get_request_operation(self) -> List[Union[DeploySingleVMOperation, DeployDoubleVMOperation,
-                                                  RemoveSingleVMOperation, RemoveDoubleVMOperation]]:
-        return self.__request_operation_list
-
-    def add_request_operation(self, op: Union[DeploySingleVMOperation, DeployDoubleVMOperation,
-                                              RemoveSingleVMOperation, RemoveDoubleVMOperation]) -> None:
-        self.__request_operation_list.append(op)
-
-    def add_purchase_server_operation(self, op: PurchaseServerOperation) -> None:
-        self.__purchase_server_operation_list.append(op)
-
-    # def add_deploy_vm_operation(self, op: Union[DeploySingleVMOperation, DeployDoubleVMOperation]) -> None:
-    #     self.__deploy_vm_operation_list.append(op)
-
-    def add_migrate_vm_operation(self, op: Union[MigrateSingleVMOperation, MigrateDoubleVMOperation]) -> None:
-        self.__migrate_vm_operation_list.append(op)
-
-    # def add_remove_vm_operation(self, op: Union[RemoveSingleVMOperation, RemoveDoubleVMOperation]) -> None:
-    #     self.__remove_vm_operation_list.append(op)

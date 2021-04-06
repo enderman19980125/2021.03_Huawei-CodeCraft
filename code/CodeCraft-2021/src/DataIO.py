@@ -62,10 +62,10 @@ def read_day_request(r: Reader, e: Environment, day: int) -> None:
 
 
 def write_day_operation(w: Writer, e: Environment, day: int) -> None:
-    day_operation = e.get_day_operation_by_day(day=day)
+    day_operation = e.get_day_info_by_day(day=day)
 
     server_dict = {}
-    for purchase_server_operation in day_operation.get_purchase_server_operation():
+    for purchase_server_operation in day_operation.get_purchase_server_operation_list():
         server_id = purchase_server_operation.get_server().get_server_id()
         server_type = purchase_server_operation.get_server().get_server_type()
         if server_type in server_dict.keys():
@@ -81,10 +81,21 @@ def write_day_operation(w: Writer, e: Environment, day: int) -> None:
 
     w.write(content=f'(migration, 0)')
 
-    for op in day_operation.get_request_operation():
+    for op in day_operation.get_request_operation_list():
         if isinstance(op, DeploySingleVMOperation):
             mapped_server_id = w.get_mapped_server_id(server_id=op.get_server().get_server_id())
             w.write(content=f'({mapped_server_id}, {op.get_node()})')
         elif isinstance(op, DeployDoubleVMOperation):
             mapped_server_id = w.get_mapped_server_id(server_id=op.get_server().get_server_id())
             w.write(content=f'({mapped_server_id})')
+
+    w.flush()
+
+
+def write_day_info(w: Writer, e: Environment, day: int) -> None:
+    content_list = [
+        f'----------------    Day = {day}    ----------------',
+        f'Accumulated Cost = {e.eval_get_accumulated_total_cost()}'
+    ]
+    content = '\n'.join(content_list)
+    w.write(content=content)
