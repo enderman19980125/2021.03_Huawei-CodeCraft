@@ -61,11 +61,9 @@ def read_day_request(r: Reader, e: Environment, day: int) -> None:
             e.add_request_operation(day=day, op=op)
 
 
-def write_day_operation(w: Writer, e: Environment, day: int) -> None:
-    day_operation = e.get_day_info_by_day(day=day)
-
+def write_day_operation(w: Writer, e: Environment) -> None:
     server_dict = {}
-    for purchase_server_operation in day_operation.get_purchase_server_operation_list():
+    for purchase_server_operation in e.get_current_day_info().get_purchase_server_operation_list():
         server_id = purchase_server_operation.get_server().get_server_id()
         server_type = purchase_server_operation.get_server().get_server_type()
         if server_type in server_dict.keys():
@@ -81,7 +79,7 @@ def write_day_operation(w: Writer, e: Environment, day: int) -> None:
 
     w.write(content=f'(migration, 0)')
 
-    for op in day_operation.get_request_operation_list():
+    for op in e.get_current_day_info().get_request_operation_list():
         if isinstance(op, DeploySingleVMOperation):
             mapped_server_id = w.get_mapped_server_id(server_id=op.get_server().get_server_id())
             w.write(content=f'({mapped_server_id}, {op.get_node()})')
@@ -92,10 +90,52 @@ def write_day_operation(w: Writer, e: Environment, day: int) -> None:
     w.flush()
 
 
-def write_day_info(w: Writer, e: Environment, day: int) -> None:
+def write_day_info_header(w: Writer) -> None:
     content_list = [
-        f'----------------    Day = {day}    ----------------',
-        f'Accumulated Cost = {e.eval_get_accumulated_total_cost()}'
+        'day',
+
+        'accumulated_total_cost',
+        'accumulated_purchase_cost',
+        'accumulated_running_cost',
+
+        'current_day_total_cost',
+        'current_day_purchase_cost',
+        'current_day_running_cost',
+
+        'num_total_servers',
+        'num_deployed_servers',
+        'num_idle_servers',
+        'num_purchased_servers',
+
+        'num_total_vm',
+        'num_deployed_vm',
+        'num_idle_vm',
     ]
-    content = '\n'.join(content_list)
+    content = ','.join(content_list)
+    w.write(content=content)
+
+
+def write_day_info(w: Writer, e: Environment) -> None:
+    content_list = [
+        e.get_current_day(),
+
+        e.eval_get_accumulated_total_cost(),
+        e.eval_get_accumulated_purchase_cost(),
+        e.eval_get_accumulated_running_cost(),
+
+        e.get_current_day_info().eval_get_total_cost(),
+        e.get_current_day_info().eval_get_purchase_cost(),
+        e.get_current_day_info().eval_get_running_cost(),
+
+        len(e.get_deployed_server_dict()) + len(e.get_non_deployed_server_dict()),
+        len(e.get_deployed_server_dict()),
+        len(e.get_non_deployed_server_dict()),
+        len(e.get_current_day_info().get_purchase_server_operation_list()),
+
+        len(e.get_deployed_vm_dict()) + len(e.get_non_deployed_vm_dict()),
+        len(e.get_deployed_vm_dict()),
+        len(e.get_non_deployed_vm_dict()),
+    ]
+    content_list = map(str, content_list)
+    content = ','.join(content_list)
     w.write(content=content)

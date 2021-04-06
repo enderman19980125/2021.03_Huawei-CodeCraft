@@ -15,10 +15,7 @@ def init(e: Environment) -> None:
                 All_Capable_Server_Type_List.remove(server_type)
 
 
-def simulate_current_day(e: Environment, day: int) -> None:
-    e.start_next_day()
-    assert e.get_current_day() == day
-
+def simulate_current_day(e: Environment) -> None:
     for op in e.get_current_day_info().get_request_operation_list():
         vm = op.get_vm()
 
