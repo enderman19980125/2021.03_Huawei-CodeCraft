@@ -62,6 +62,8 @@ def read_day_request(r: Reader, e: Environment, day: int) -> None:
 
 
 def write_day_operation(w: Writer, e: Environment) -> None:
+    content_list = []
+
     server_dict = {}
     for purchase_server_operation in e.get_current_day_info().get_purchase_server_operation_list():
         server_id = purchase_server_operation.get_server().get_server_id()
@@ -71,22 +73,39 @@ def write_day_operation(w: Writer, e: Environment) -> None:
         else:
             server_dict[server_type] = [server_id]
 
-    w.write(content=f'(purchase, {len(server_dict)})')
+    # w.write(content=f'(purchase, {len(server_dict)})')
+    content_list.append(f'(purchase, {len(server_dict)})')
     for server_type, server_id_list in server_dict.items():
-        w.write(content=f'({server_type}, {len(server_id_list)})')
+        # w.write(content=f'({server_type}, {len(server_id_list)})')
+        content_list.append(f'({server_type}, {len(server_id_list)})')
         for server_id in server_id_list:
             w.set_mapped_server_id(server_id=server_id)
 
-    w.write(content=f'(migration, 0)')
+    # w.write(content=f'(migration, {len(e.get_current_day_info().get_migrate_vm_operation_list())})')
+    content_list.append(f'(migration, {len(e.get_current_day_info().get_migrate_vm_operation_list())})')
+    for op in e.get_current_day_info().get_migrate_vm_operation_list():
+        vm_id = op.get_vm().get_vm_id()
+        server_id = op.get_server().get_server_id()
+        if op.get_vm().is_double():
+            # w.write(content=f'({vm_id}, {server_id})')
+            content_list.append(f'({vm_id}, {server_id})')
+        else:
+            node = op.get_node()
+            # w.write(content=f'({vm_id}, {server_id}, {node})')
+            content_list.append(f'({vm_id}, {server_id}, {node})')
 
     for op in e.get_current_day_info().get_request_operation_list():
         if isinstance(op, DeploySingleVMOperation):
             mapped_server_id = w.get_mapped_server_id(server_id=op.get_server().get_server_id())
-            w.write(content=f'({mapped_server_id}, {op.get_node()})')
+            # w.write(content=f'({mapped_server_id}, {op.get_node()})')
+            content_list.append(f'({mapped_server_id}, {op.get_node()})')
         elif isinstance(op, DeployDoubleVMOperation):
             mapped_server_id = w.get_mapped_server_id(server_id=op.get_server().get_server_id())
-            w.write(content=f'({mapped_server_id})')
+            # w.write(content=f'({mapped_server_id})')
+            content_list.append(f'({mapped_server_id})')
 
+    content = '\n'.join(content_list)
+    w.write(content=content)
     w.flush()
 
 
@@ -102,14 +121,16 @@ def write_day_info_header(w: Writer) -> None:
         'current_day_purchase_cost',
         'current_day_running_cost',
 
+        'num_total_vm',
+        'num_deployed_vm',
+        'num_idle_vm',
+
         'num_total_servers',
         'num_deployed_servers',
         'num_idle_servers',
         'num_purchased_servers',
 
-        'num_total_vm',
-        'num_deployed_vm',
-        'num_idle_vm',
+        'num_migrations',
     ]
     content = ','.join(content_list)
     w.write(content=content)
@@ -127,14 +148,16 @@ def write_day_info(w: Writer, e: Environment) -> None:
         e.get_current_day_info().eval_get_purchase_cost(),
         e.get_current_day_info().eval_get_running_cost(),
 
+        len(e.get_deployed_vm_dict()) + len(e.get_non_deployed_vm_dict()),
+        len(e.get_deployed_vm_dict()),
+        len(e.get_non_deployed_vm_dict()),
+
         len(e.get_deployed_server_dict()) + len(e.get_non_deployed_server_dict()),
         len(e.get_deployed_server_dict()),
         len(e.get_non_deployed_server_dict()),
         len(e.get_current_day_info().get_purchase_server_operation_list()),
 
-        len(e.get_deployed_vm_dict()) + len(e.get_non_deployed_vm_dict()),
-        len(e.get_deployed_vm_dict()),
-        len(e.get_non_deployed_vm_dict()),
+        len(e.get_current_day_info().get_migrate_vm_operation_list()),
     ]
     content_list = map(str, content_list)
     content = ','.join(content_list)

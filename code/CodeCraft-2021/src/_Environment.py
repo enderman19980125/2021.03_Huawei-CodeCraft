@@ -184,32 +184,54 @@ class Environment:
         vm.add_operation(op=op)
 
     def op_migrate_single_vm(self, vm: SingleVM, new_server: Server, node: str) -> None:
-        if vm.get_vm_id() not in self.__vm_dict.keys():
-            raise KeyError(f"The VM[{vm.get_vm_id}] doesn't exist.")
-        if vm.get_server_id() == new_server.get_server_id() and vm.get_node() == node:
-            raise KeyError(f"The VM[{vm.get_vm_id()}] can't migrate to the original place.")
+        # if vm.get_vm_id() not in self.__vm_dict.keys():
+        #     raise KeyError(f"The VM[{vm.get_vm_id}] doesn't exist.")
+        # if vm.get_server_id() == new_server.get_server_id() and vm.get_node() == node:
+        #     raise KeyError(f"The VM[{vm.get_vm_id()}] can't migrate to the original place.")
         old_server = vm.get_server()
-        old_server.op_remove_vm(vm=vm)
+        old_server_is_idle = old_server.is_idle()
+        new_server_is_idle = new_server.is_idle()
+
+        old_server.remove_vm(vm=vm)
         new_server.deploy_single_vm(vm=vm, node=node)
         vm.deploy(server=new_server, node=node)
 
         op = MigrateSingleVMOperation(day=self.get_current_day(), vm=vm, server=new_server, node=node)
         vm.add_operation(op=op)
-        self.__current_day_info.add_migrate_vm_operation(op=op)
+        self.get_current_day_info().add_migrate_vm_operation(op=op)
+
+        if not old_server_is_idle and old_server.is_idle():
+            self.__non_deployed_server_dict[old_server.get_server_id()] = old_server
+            self.__deployed_server_dict.pop(old_server.get_server_id())
+
+        if new_server_is_idle and not new_server.is_idle():
+            self.__deployed_server_dict[new_server.get_server_id()] = new_server
+            self.__non_deployed_server_dict.pop(new_server.get_server_id())
 
     def op_migrate_double_vm(self, vm: DoubleVM, new_server: Server) -> None:
-        if vm.get_vm_id() not in self.__vm_dict.keys():
-            raise KeyError(f"The VM[{vm.get_vm_id}] doesn't exist.")
-        if vm.get_server_id() == new_server.get_server_id():
-            raise KeyError(f"The VM[{vm.get_vm_id()}] can't migrate to the original place.")
+        # if vm.get_vm_id() not in self.__vm_dict.keys():
+        #     raise KeyError(f"The VM[{vm.get_vm_id}] doesn't exist.")
+        # if vm.get_server_id() == new_server.get_server_id():
+        #     raise KeyError(f"The VM[{vm.get_vm_id()}] can't migrate to the original place.")
         old_server = vm.get_server()
-        old_server.op_remove_vm(vm=vm)
+        old_server_is_idle = old_server.is_idle()
+        new_server_is_idle = new_server.is_idle()
+
+        old_server.remove_vm(vm=vm)
         new_server.deploy_double_vm(vm=vm)
         vm.deploy(server=new_server)
 
         op = MigrateDoubleVMOperation(day=self.get_current_day(), vm=vm, server=new_server)
+        self.get_current_day_info().add_migrate_vm_operation(op=op)
         vm.add_operation(op=op)
-        self.__current_day_info.add_migrate_vm_opertion(op=op)
+
+        if new_server_is_idle and not new_server.is_idle():
+            self.__deployed_server_dict[new_server.get_server_id()] = new_server
+            self.__non_deployed_server_dict.pop(new_server.get_server_id())
+
+        if not old_server_is_idle and old_server.is_idle():
+            self.__non_deployed_server_dict[old_server.get_server_id()] = old_server
+            self.__deployed_server_dict.pop(old_server.get_server_id())
 
     def op_remove_vm(self, op: Union[RemoveSingleVMOperation, RemoveDoubleVMOperation]) -> None:
         vm = op.get_vm()

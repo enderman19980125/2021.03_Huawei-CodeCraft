@@ -35,6 +35,7 @@ def main(is_debug: bool = False, read_mode: str = 'console', read_filename: str 
     for day_id in range(1, num_total_days + 1):
         # simulate
         e.start_next_day()
+        Simulation.migrate_current_day(e=e)
         Simulation.simulate_current_day(e=e)
         e.finish_current_day()
 

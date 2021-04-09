@@ -53,6 +53,9 @@ class Server:
     def get_vm_dict_of_node_a(self) -> Dict[str, Union[SingleVM, DoubleVM]]:
         return self.__a_vm_dict
 
+    def get_num_vm_of_node_a(self) -> int:
+        return len(self.get_vm_dict_of_node_a())
+
     def get_rest_cpu_of_node_b(self) -> int:
         return self.__b_rest_cpu
 
@@ -62,8 +65,14 @@ class Server:
     def get_vm_dict_of_node_b(self) -> Dict[str, Union[SingleVM, DoubleVM]]:
         return self.__b_vm_dict
 
+    def get_num_vm_of_node_b(self) -> int:
+        return len(self.get_vm_dict_of_node_b())
+
     def is_idle(self) -> bool:
         return self.__a_vm_dict == {} and self.__b_vm_dict == {}
+
+    def get_num_vm_of_both_nodes(self) -> int:
+        return self.get_num_vm_of_node_a() + self.get_num_vm_of_node_b()
 
     def add_operation(self, op: PurchaseServerOperation) -> None:
         self.__operation_history_list.append(op)

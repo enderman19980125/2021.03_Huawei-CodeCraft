@@ -6,6 +6,10 @@ def init(e: Environment) -> None:
     pass
 
 
+def migrate_current_day(e: Environment) -> None:
+    pass
+
+
 def simulate_current_day(e: Environment) -> None:
     for op in e.get_current_day_info().get_request_operation_list():
         vm = op.get_vm()
