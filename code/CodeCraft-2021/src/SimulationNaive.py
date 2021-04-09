@@ -2,15 +2,15 @@ from _Environment import Environment
 from _Operation import *
 
 
-def init(e: Environment) -> None:
+def init(**kwargs) -> None:
     pass
 
 
-def migrate_current_day(e: Environment) -> None:
+def migrate_current_day(**kwargs) -> None:
     pass
 
 
-def simulate_current_day(e: Environment) -> None:
+def simulate_current_day(e: Environment, **kwargs) -> None:
     for op in e.get_current_day_info().get_request_operation_list():
         vm = op.get_vm()
 

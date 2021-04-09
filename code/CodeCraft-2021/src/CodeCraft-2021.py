@@ -5,7 +5,8 @@ from _Writer import Writer
 from _Environment import Environment
 import DataIO
 # import SimulationNaive as Simulation
-import SimulationFewServers as Simulation
+# import SimulationFewServers as Simulation
+import SimulationMain as Simulation
 
 
 def main(is_debug: bool = False, read_mode: str = 'console', read_filename: str = '',
@@ -21,6 +22,7 @@ def main(is_debug: bool = False, read_mode: str = 'console', read_filename: str 
     DataIO.read_server_config(r=r, e=e)
     DataIO.read_vm_config(r=r, e=e)
     num_total_days, num_next_days = map(int, next(r.get_next_line).split(' '))
+    e.set_total_days(total_days=num_total_days)
 
     day_data_id = 0
     for day_data_id in range(1, num_next_days + 1):

@@ -18,6 +18,7 @@ class Environment:
         self.__deployed_server_dict = {}
         self.__next_server_id = 1
 
+        self.__total_days = 0
         self.__current_day = 0
         self.__day_info_dict = {0: DayInfo(day=0)}
 
@@ -29,6 +30,9 @@ class Environment:
 
     def is_debug(self) -> bool:
         return self.__is_debug
+
+    def get_total_days(self) -> int:
+        return self.__total_days
 
     def get_current_day(self) -> int:
         return self.__current_day
@@ -103,6 +107,9 @@ class Environment:
 
     def set_debug(self, is_debug: bool) -> None:
         self.__is_debug = is_debug
+
+    def set_total_days(self, total_days: int) -> None:
+        self.__total_days = total_days
 
     def add_request_operation(self, day: int, op: Union[DeploySingleVMOperation, DeployDoubleVMOperation,
                                                         RemoveSingleVMOperation, RemoveDoubleVMOperation]):
