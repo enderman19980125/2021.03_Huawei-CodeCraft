@@ -44,6 +44,12 @@ class Server:
     def get_cost_everyday(self) -> int:
         return self.get_server_config().get_cost_everyday()
 
+    def get_used_cpu_of_node_a(self) -> int:
+        return self.get_cpu_of_one_node() - self.get_rest_cpu_of_node_a()
+
+    def get_used_memory_of_node_a(self) -> int:
+        return self.get_memory_of_one_node() - self.get_rest_memory_of_node_a()
+
     def get_rest_cpu_of_node_a(self) -> int:
         return self.__a_rest_cpu
 
@@ -55,6 +61,12 @@ class Server:
 
     def get_num_vm_of_node_a(self) -> int:
         return len(self.get_vm_dict_of_node_a())
+
+    def get_used_cpu_of_node_b(self) -> int:
+        return self.get_cpu_of_one_node() - self.get_rest_cpu_of_node_b()
+
+    def get_used_memory_of_node_b(self) -> int:
+        return self.get_memory_of_one_node() - self.get_rest_memory_of_node_b()
 
     def get_rest_cpu_of_node_b(self) -> int:
         return self.__b_rest_cpu

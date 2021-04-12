@@ -12,9 +12,10 @@ def init(**kwargs) -> None:
 
 # --------------------------------    migrate    --------------------------------
 
-def migrate_vm(e: Environment, vm: Union[SingleVM, DoubleVM], current_server: Server) -> int:
+def migrate_vm(e: Environment, vm: Union[SingleVM, DoubleVM], current_server: Server,
+               available_server_list: List[Server]) -> int:
     if isinstance(vm, SingleVM):
-        for server in e.get_deployed_server_dict().values():
+        for server in available_server_list:
             if server == current_server:
                 continue
             if server.has_capacity_for_single_vm(vm=vm, node='A'):
@@ -25,7 +26,7 @@ def migrate_vm(e: Environment, vm: Union[SingleVM, DoubleVM], current_server: Se
                 return 1
 
     if isinstance(vm, DoubleVM):
-        for server in e.get_deployed_server_dict().values():
+        for server in available_server_list:
             if server == current_server:
                 continue
             if server.has_capacity_for_double_vm(vm=vm):
@@ -36,43 +37,79 @@ def migrate_vm(e: Environment, vm: Union[SingleVM, DoubleVM], current_server: Se
 
 
 def migrate_current_day(e: Environment, **kwargs) -> None:
-    return
-    # server_id_num_vm_list = [(server.get_server_id(), server.get_num_vm_of_both_nodes())
-    #                          for server in e.get_deployed_server_dict().values()]
-    #
-    # server_id_num_vm_list.sort(key=lambda t: t[1])
-    #
-    # num_total_vm = sum([t[1] for t in server_id_num_vm_list])
-    # num_migrations = 0
-    # max_migrations = num_total_vm * 3 // 100
-    #
-    # for server_id, num_vm in server_id_num_vm_list:
-    #     server = e.get_server_by_id(server_id=server_id)
-    #     for vm in server.get_vm_dict_of_node_a().copy().values():
-    #         num_migrations += migrate_vm(e=e, vm=vm, current_server=server)
-    #         if num_migrations == max_migrations:
-    #             break
-    #     if num_migrations == max_migrations:
-    #         break
+    server_dict_dict = {
+        server: {
+            'server': server,
+            'num_del_op': 0,
+            'num_vm': server.get_num_vm_of_node_a() + server.get_num_vm_of_node_b(),
+            'key': server.get_used_cpu_of_node_a() + server.get_used_cpu_of_node_b() + \
+                   server.get_used_memory_of_node_a() + server.get_used_memory_of_node_b(),
+        }
+        for server in e.get_deployed_server_dict().values()
+    }
+
+    for remove_op in e.get_current_day_info().get_del_vm_operation_list():
+        server_dict_dict[remove_op.get_vm().get_server()]['num_del_op'] += 1
+
+    for server, server_dict in server_dict_dict.items():
+        server_dict_dict[server]['key'] += server.get_num_vm_of_node_a() + server.get_num_vm_of_node_b() + \
+                                           -server_dict_dict[server]['num_del_op']
+
+    server_dict_list = list(server_dict_dict.values())
+    server_dict_list.sort(key=lambda sd: sd['key'], reverse=False)
+
+    num_total_vm = sum([sd['num_vm'] for sd in server_dict_list])
+    num_migrations = 0
+    max_migrations = num_total_vm * 3 // 100
+    available_server_list = [sd['server'] for sd in server_dict_list]
+    available_server_list.reverse()
+
+    for server_dict in server_dict_list:
+        server = server_dict['server']
+        available_server_list.remove(server)
+
+        for vm in server.get_vm_dict_of_node_a().copy().values():
+            num_migrations += migrate_vm(e=e, vm=vm, current_server=server, available_server_list=available_server_list)
+            if num_migrations == max_migrations:
+                return
+
+        for vm in server.get_vm_dict_of_node_b().copy().values():
+            num_migrations += migrate_vm(e=e, vm=vm, current_server=server, available_server_list=available_server_list)
+            if num_migrations == max_migrations:
+                return
 
 
 # --------------------------------    position    --------------------------------
 
 def server_cost_s(vm: SingleVM, server: Server, node: str) -> float:
     p = 1.0
+
+    # if node == 'A':
+    #     return p * server.get_rest_cpu_of_node_a() + server.get_rest_memory_of_node_a() + \
+    #            - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+    # elif node == 'B':
+    #     return p * server.get_rest_cpu_of_node_b() + server.get_rest_cpu_of_node_b() + \
+    #            - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+    # else:
+    #     raise KeyError(f'"node" must be "A" or "B".')
+
     if node == 'A':
-        return p * server.get_rest_cpu_of_node_a() + server.get_rest_memory_of_node_a() + \
-               - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+        return server.get_rest_cpu_of_node_a() + server.get_rest_memory_of_node_a()
+    elif node == 'B':
+        return server.get_rest_cpu_of_node_b() + server.get_rest_cpu_of_node_b()
     else:
-        return p * server.get_rest_cpu_of_node_b() + server.get_rest_cpu_of_node_b() + \
-               - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+        raise KeyError(f'"node" must be "A" or "B".')
 
 
 def server_cost_d(vm: DoubleVM, server: Server) -> float:
     p = 1.0
-    return p * max(server.get_rest_cpu_of_node_a(), server.get_rest_cpu_of_node_b()) + \
-           max(server.get_rest_memory_of_node_a(), server.get_rest_memory_of_node_b()) + \
-           - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+
+    # return p * min(server.get_rest_cpu_of_node_a(), server.get_rest_cpu_of_node_b()) + \
+    #        min(server.get_rest_memory_of_node_a(), server.get_rest_memory_of_node_b()) + \
+    #        - p * vm.get_cpu_of_one_node() - vm.get_memory_of_one_node()
+
+    return server.get_rest_cpu_of_node_a() + server.get_rest_cpu_of_node_b() + \
+           server.get_rest_memory_of_node_a() + server.get_rest_memory_of_node_b()
 
 
 def select_running_server_for_single_vm(e: Environment, vm: SingleVM) -> Tuple[Optional[Server], Optional[str]]:
@@ -127,13 +164,16 @@ def select_idle_server_for_double_vm(e: Environment, vm: DoubleVM) -> Optional[S
 # --------------------------------    purchase    --------------------------------
 
 def server_config_cost(e: Environment, server_config: ServerConfig) -> float:
-    if e.get_current_day() / e.get_total_days() < 0.2:
-        return server_config.get_cost_everyday()
-    elif e.get_current_day() / e.get_total_days() < 0.8:
-        return server_config.get_cost_purchase() + \
-               server_config.get_cost_everyday() * (e.get_total_days() - e.get_current_day())
-    else:
-        return server_config.get_cost_purchase()
+    return server_config.get_cost_purchase() + \
+           server_config.get_cost_everyday() * (e.get_total_days() - e.get_current_day())
+
+    # if e.get_current_day() / e.get_total_days() < 0.2:
+    #     return server_config.get_cost_everyday()
+    # elif e.get_current_day() / e.get_total_days() < 0.8:
+    #     return server_config.get_cost_purchase() + \
+    #            server_config.get_cost_everyday() * (e.get_total_days() - e.get_current_day())
+    # else:
+    #     return server_config.get_cost_purchase()
 
 
 def purchase_the_best_server(e: Environment, vm: Union[SingleVM, DoubleVM]) -> Server:

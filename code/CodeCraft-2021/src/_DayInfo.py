@@ -16,6 +16,20 @@ class DayInfo:
     def get_day(self) -> int:
         return self.__day
 
+    def get_add_vm_operation_list(self) -> List[Union[DeploySingleVMOperation, DeployDoubleVMOperation]]:
+        return [op for op in self.__request_operation_list
+                if isinstance(op, DeploySingleVMOperation) or isinstance(op, DeployDoubleVMOperation)]
+
+    def get_num_add_vm_operation(self) -> int:
+        return len(self.get_add_vm_operation_list())
+
+    def get_del_vm_operation_list(self) -> List[Union[DeploySingleVMOperation, DeployDoubleVMOperation]]:
+        return [op for op in self.__request_operation_list
+                if isinstance(op, RemoveSingleVMOperation) or isinstance(op, RemoveDoubleVMOperation)]
+
+    def get_num_del_vm_operation(self) -> int:
+        return len(self.get_del_vm_operation_list())
+
     def get_request_operation_list(self) -> List[Union[DeploySingleVMOperation, DeployDoubleVMOperation,
                                                        RemoveSingleVMOperation, RemoveDoubleVMOperation]]:
         return self.__request_operation_list

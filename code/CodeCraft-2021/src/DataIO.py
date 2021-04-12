@@ -112,25 +112,35 @@ def write_day_operation(w: Writer, e: Environment) -> None:
 def write_day_info_header(w: Writer) -> None:
     content_list = [
         'day',
+        '|',
 
         'accumulated_total_cost',
         'accumulated_purchase_cost',
         'accumulated_running_cost',
+        '|',
 
         'current_day_total_cost',
         'current_day_purchase_cost',
         'current_day_running_cost',
+        '|',
 
         'num_total_vm',
         'num_deployed_vm',
         'num_idle_vm',
+        '|',
 
         'num_total_servers',
         'num_deployed_servers',
         'num_idle_servers',
         'num_purchased_servers',
+        '|',
+
+        'num_add_vm_operation',
+        'num_del_vm_operation',
+        '|',
 
         'num_migrations',
+        '|',
     ]
     content = ','.join(content_list)
     w.write(content=content)
@@ -139,25 +149,35 @@ def write_day_info_header(w: Writer) -> None:
 def write_day_info(w: Writer, e: Environment) -> None:
     content_list = [
         e.get_current_day(),
+        '|',
 
         e.eval_get_accumulated_total_cost(),
         e.eval_get_accumulated_purchase_cost(),
         e.eval_get_accumulated_running_cost(),
+        '|',
 
         e.get_current_day_info().eval_get_total_cost(),
         e.get_current_day_info().eval_get_purchase_cost(),
         e.get_current_day_info().eval_get_running_cost(),
+        '|',
 
         len(e.get_deployed_vm_dict()) + len(e.get_non_deployed_vm_dict()),
         len(e.get_deployed_vm_dict()),
         len(e.get_non_deployed_vm_dict()),
+        '|',
 
         len(e.get_deployed_server_dict()) + len(e.get_non_deployed_server_dict()),
         len(e.get_deployed_server_dict()),
         len(e.get_non_deployed_server_dict()),
         len(e.get_current_day_info().get_purchase_server_operation_list()),
+        '|',
+
+        e.get_current_day_info().get_num_add_vm_operation(),
+        e.get_current_day_info().get_num_del_vm_operation(),
+        '|',
 
         len(e.get_current_day_info().get_migrate_vm_operation_list()),
+        '|',
     ]
     content_list = map(str, content_list)
     content = ','.join(content_list)
